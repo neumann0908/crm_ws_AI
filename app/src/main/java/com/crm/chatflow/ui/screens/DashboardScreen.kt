@@ -47,7 +47,7 @@ fun DashboardScreen() {
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    Icons.Default.Hub,
+                                    Icons.Default.Dashboard,
                                     contentDescription = null,
                                     tint = Color(0xFF38BDF8),
                                     modifier = Modifier.size(18.dp)
@@ -219,6 +219,190 @@ fun DashboardScreen() {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Income", color = textSecondary, fontSize = 14.sp)
+                                Surface(
+                                    shape = RoundedCornerShape(50),
+                                    color = Color(0xFF065F46)
+                                ) {
+                                    Text(
+                                        text = "+15.7%",
+                                        color = Color(0xFF6EE7B7),
+                                        fontSize = 10.sp,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = "+2,456$",
+                                color = textPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            )
+                            Text(text = "This week's income", color = textSecondary, fontSize = 11.sp)
+                        }
+                    }
+
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = cardBg)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Expense", color = textSecondary, fontSize = 14.sp)
+                                Surface(
+                                    shape = RoundedCornerShape(50),
+                                    color = Color(0xFF7F1D1D)
+                                ) {
+                                    Text(
+                                        text = "-10.7%",
+                                        color = Color(0xFFFCA5A5),
+                                        fontSize = 10.sp,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = "-1,124$",
+                                color = textPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            )
+                            Text(text = "This week's expense", color = textSecondary, fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+
+            // Sección de Tarjetas (My Cards Stack)
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = cardBg)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = "My cards", color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    shape = CircleShape,
+                                    color = cardBgLight
+                                ) {
+                                    Text(
+                                        text = "3",
+                                        color = textSecondary,
+                                        fontSize = 11.sp,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Button(
+                                onClick = { },
+                                colors = ButtonDefaults.buttonColors(containerColor = cardBgLight),
+                                shape = RoundedCornerShape(50),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = null, tint = textPrimary, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Add", color = textPrimary, fontSize = 12.sp)
+                            }
+                        }
+
+                        // Tarjeta simulada con gradiente elegante
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF3B82F6))
+                                    )
+                                )
+                                .padding(20.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("VISA", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text("**** 6902", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+                                }
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text("4156 6727 1439 6902", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text("Monse Neumann", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
+                                        Text("07/25", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Sección de Suscripciones
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = cardBg)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = "Subscriptions", color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    shape = CircleShape,
+                                    color = cardBgLight
+                                ) {
+                                    Text(
+                                        text = "5",
+                                        color = textSecondary,
+                                        fontSize = 11.sp,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            TextButton(onClick = { }) {
+                                Text("Manage >", color = Color(0xFF38BDF8), fontSize = 12.sp)
+                            }
+                        }
+
+                        SubscriptionItem(title = "iCloud", date = "Next 15 July", price = "$2.99", cardBgLight, textPrimary, textSecondary)
+                        SubscriptionItem(title = "Discord Nitro", date = "Next 19 July", price = "$8.99", cardBgLight, textPrimary, textSecondary)
+                        SubscriptionItem(title = "Telegram", date = "Next 04 August", price = "$4.99", carorizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(text = "Income", color = textSecondary, fontSize = 14.sp)
                                 Surface(
