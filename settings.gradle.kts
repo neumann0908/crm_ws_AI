@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ChatFlow CRM"
+rootProject.name = "crm_ws_Al"
 include(":app")
