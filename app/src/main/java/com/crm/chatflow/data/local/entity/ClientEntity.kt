@@ -1,4 +1,4 @@
-package com.crm.chatflow.data.entity
+package com.crm.chatflow.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
