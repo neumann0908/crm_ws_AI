@@ -1,22 +1,82 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
+}
 
-    <application
-        android:allowBackup="true"
-        android:icon="@android:drawable/sym_def_app_icon"
-        android:label="CRM Solopreneur"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.ChatFlow">
-        
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:theme="@style/Theme.ChatFlow">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
+android {
+    namespace = "com.crm.chatflow"
+    compileSdk = 34
 
-</manifest>
+    defaultConfig {
+        applicationId = "com.crm.chatflow"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
+
+        // Restricción de ABI para evitar problemas con librerías nativas de IA
+        ndk {
+            abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    
+    buildFeatures {
+        compose = true
+    }
+    
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+    
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+dependencies {
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    
+    // Compose BOM
+    implementation(platform("androidx.compose:compose-bom:2023.08.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+
+    // Room Database con KSP
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    // MediaPipe GenAI para IA Local Offline (LlmInference)
+    implementation("com.google.mediapipe:tasks-genai:0.10.14")
+}
