@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Definición del tema principal requerido por el Manifest -->
-    <style name="Theme.ChatFlow" parent="android:Theme.Material.Light.NoActionBar">
-        <!-- Personalizaciones básicas del tema -->
+    <!-- Tema principal basado en Material 3 para Jetpack Compose -->
+    <style name="Theme.ChatFlow" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Personalizaciones opcionales del sistema -->
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 </resources>
+
