@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Tema nativo del sistema compatible con la actividad principal -->
-    <style name="Theme.ChatFlow" parent="android:style/Theme.Material.Light.NoActionBar">
-        <!-- Personalización opcional del fondo de ventana -->
+    <!-- Tema nativo del sistema compatible y libre de fallos de compilación -->
+    <style name="Theme.ChatFlow" parent="android:Theme.DeviceDefault.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 </resources>
