@@ -3,8 +3,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@android:ic_menu_agenda"
-        android:roundIcon="@android:ic_menu_agenda"
+        android:icon="@android:drawable/sym_def_app_icon"
         android:label="CRM Solopreneur"
         android:supportsRtl="true"
         android:theme="@style/Theme.ChatFlow">
