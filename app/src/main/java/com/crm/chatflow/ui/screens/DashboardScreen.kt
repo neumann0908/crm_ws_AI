@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,14 +21,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.crm.chatflow.ui.viewmodel.DashboardViewModel
 
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(
+    viewModel: DashboardViewModel = viewModel()
+) {
     val darkBg = Color(0xFF0B0F19)
     val cardBg = Color(0xFF161E2E)
     val cardBgLight = Color(0xFF1E283C)
     val textPrimary = Color(0xFFFFFFFF)
     val textSecondary = Color(0xFF94A3B8)
+
+    val balance by viewModel.totalBalance.collectAsState()
+    val income by viewModel.totalIncome.collectAsState()
+    val expense by viewModel.totalExpense.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -38,7 +48,7 @@ fun DashboardScreen() {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Barra superior personalizada (Header)
+            // Header
             item {
                 Row(
                     modifier = Modifier
@@ -81,7 +91,7 @@ fun DashboardScreen() {
                         ) {
                             Icon(
                                 Icons.Default.Search,
-                                contentDescription = "Search",
+                                contentDescription = "Buscar",
                                 tint = textSecondary,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -95,7 +105,7 @@ fun DashboardScreen() {
                         ) {
                             Icon(
                                 Icons.Default.Notifications,
-                                contentDescription = "Notifications",
+                                contentDescription = "Notificaciones",
                                 tint = textSecondary,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -104,17 +114,17 @@ fun DashboardScreen() {
                 }
             }
 
-            // Título de la sección
+            // Título principal en Español
             item {
                 Text(
-                    text = "My Dashboard",
+                    text = "Mi Panel",
                     style = MaterialTheme.typography.headlineMedium,
                     color = textPrimary,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            // Tarjeta Principal de Balance (Gradiente Verde Neón)
+            // Tarjeta de Balance General (Dinámica)
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -135,19 +145,19 @@ fun DashboardScreen() {
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Text(
-                                text = "Total balance",
+                                text = "Balance total",
                                 color = Color(0xFF064E3B),
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 15.sp
                             )
                             Text(
-                                text = "120,456,50 $",
+                                text = String.format("%.2f $", balance),
                                 color = Color(0xFF022C22),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 32.sp
                             )
                             Text(
-                                text = "+2,456 revenue from last month",
+                                text = "Actualizado en tiempo real (Local)",
                                 color = Color(0xFF064E3B),
                                 fontSize = 12.sp
                             )
@@ -155,18 +165,18 @@ fun DashboardScreen() {
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Button(
-                                    onClick = { },
+                                    onClick = { viewModel.addTransaction("Venta rápida", 150.0, "INCOME") },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                                     shape = RoundedCornerShape(50)
                                 ) {
-                                    Text("Transfer", color = Color.White, fontSize = 13.sp)
+                                    Text("+ Venta", color = Color.White, fontSize = 13.sp)
                                 }
                                 Button(
-                                    onClick = { },
+                                    onClick = { viewModel.addTransaction("Gasto operativo", 45.0, "EXPENSE") },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                                     shape = RoundedCornerShape(50)
                                 ) {
-                                    Text("Top Up", color = Color.Black, fontSize = 13.sp)
+                                    Text("+ Gasto", color = Color.Black, fontSize = 13.sp)
                                 }
                             }
                         }
@@ -174,7 +184,7 @@ fun DashboardScreen() {
                 }
             }
 
-            // Fila de Ingresos y Gastos (Income & Expense)
+            // Fila de Ingresos y Gastos (Dinámicos)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -189,14 +199,14 @@ fun DashboardScreen() {
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(text = "Income", color = textSecondary, fontSize = 14.sp)
+                            Text(text = "Ingresos", color = textSecondary, fontSize = 14.sp)
                             Text(
-                                text = "+2,456$",
+                                text = String.format("+%.2f$", income),
                                 color = textPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp
                             )
-                            Text(text = "This week's income", color = textSecondary, fontSize = 11.sp)
+                            Text(text = "Acumulado local", color = textSecondary, fontSize = 11.sp)
                         }
                     }
 
@@ -209,20 +219,20 @@ fun DashboardScreen() {
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(text = "Expense", color = textSecondary, fontSize = 14.sp)
+                            Text(text = "Gastos", color = textSecondary, fontSize = 14.sp)
                             Text(
-                                text = "-1,124$",
+                                text = String.format("-%.2f$", expense),
                                 color = textPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp
                             )
-                            Text(text = "This week's expense", color = textSecondary, fontSize = 11.sp)
+                            Text(text = "Acumulado local", color = textSecondary, fontSize = 11.sp)
                         }
                     }
                 }
             }
 
-            // Tarjeta Financiera (My Cards)
+            // Mis Tarjetas
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -238,7 +248,7 @@ fun DashboardScreen() {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "My cards", color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(text = "Mis tarjetas", color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             Button(
                                 onClick = { },
                                 colors = ButtonDefaults.buttonColors(containerColor = cardBgLight),
@@ -247,7 +257,7 @@ fun DashboardScreen() {
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = null, tint = textPrimary, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Add", color = textPrimary, fontSize = 12.sp)
+                                Text("Añadir", color = textPrimary, fontSize = 12.sp)
                             }
                         }
 
