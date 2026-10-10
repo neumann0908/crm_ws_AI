@@ -1,4 +1,4 @@
-package com.neuman.crm.ui.screens
+package com.crm.chatflow.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -6,10 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/**
- * Pantalla principal del CRM Offline-First para solopreneurs.
- * Utiliza componentes de Material 3 con la anotación OptIn requerida para APIs experimentales.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen() {
