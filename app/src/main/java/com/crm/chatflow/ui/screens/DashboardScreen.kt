@@ -6,7 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen() {
     val darkBg = Color(0xFF0B0F19)
@@ -26,92 +27,84 @@ fun DashboardScreen() {
     val cardBgLight = Color(0xFF1E283C)
     val textPrimary = Color(0xFFFFFFFF)
     val textSecondary = Color(0xFF94A3B8)
-    
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                                    .background(cardBgLight),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Dashboard,
-                                    contentDescription = null,
-                                    tint = Color(0xFF38BDF8),
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "ethereal",
-                                color = textPrimary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            )
-                        }
-                        
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick = { },
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(cardBg)
-                            ) {
-                                Icon(Icons.Default.Search, contentDescription = "Search", tint = textSecondary, modifier = Modifier.size(18.dp))
-                            }
-                            IconButton(
-                                onClick = { },
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(cardBg)
-                            ) {
-                                Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = textSecondary, modifier = Modifier.size(18.dp))
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFF38BDF8)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "MN",
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 12.sp
-                                )
-                            }
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = darkBg)
-            )
-        },
-        containerColor = darkBg
-    ) { paddingValues ->
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = darkBg
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(darkBg),
-            contentPadding = PaddingValues(16.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Barra superior personalizada (Header)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(cardBgLight),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "E",
+                                color = Color(0xFF38BDF8),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "ethereal",
+                            color = textPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        IconButton(
+                            onClick = { },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(cardBg)
+                        ) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = "Search",
+                                tint = textSecondary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = { },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(cardBg)
+                        ) {
+                            Icon(
+                                Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = textSecondary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Título de la sección
             item {
                 Text(
                     text = "My Dashboard",
@@ -121,7 +114,7 @@ fun DashboardScreen() {
                 )
             }
 
-            // Tarjeta de Balance Principal (Gradiente Verde Neón)
+            // Tarjeta Principal de Balance (Gradiente Verde Neón)
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -141,39 +134,23 @@ fun DashboardScreen() {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Total balance",
-                                    color = Color(0xFF064E3B),
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 15.sp
-                                )
-                                Icon(
-                                    Icons.Default.AccountBalanceWallet,
-                                    contentDescription = null,
-                                    tint = Color(0xFF064E3B)
-                                )
-                            }
-                            
+                            Text(
+                                text = "Total balance",
+                                color = Color(0xFF064E3B),
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp
+                            )
                             Text(
                                 text = "120,456,50 $",
                                 color = Color(0xFF022C22),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 32.sp
                             )
-                            
                             Text(
                                 text = "+2,456 revenue from last month",
                                 color = Color(0xFF064E3B),
                                 fontSize = 12.sp
                             )
-                            
-                            Spacer(modifier = Modifier.height(4.dp))
-                            
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
@@ -197,7 +174,7 @@ fun DashboardScreen() {
                 }
             }
 
-            // Fila de Ingresos y Gastos
+            // Fila de Ingresos y Gastos (Income & Expense)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -212,23 +189,7 @@ fun DashboardScreen() {
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(text = "Income", color = textSecondary, fontSize = 14.sp)
-                                Surface(
-                                    shape = RoundedCornerShape(50),
-                                    color = Color(0xFF065F46)
-                                ) {
-                                    Text(
-                                        text = "+15.7%",
-                                        color = Color(0xFF6EE7B7),
-                                        fontSize = 10.sp,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
+                            Text(text = "Income", color = textSecondary, fontSize = 14.sp)
                             Text(
                                 text = "+2,456$",
                                 color = textPrimary,
@@ -248,23 +209,7 @@ fun DashboardScreen() {
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(text = "Expense", color = textSecondary, fontSize = 14.sp)
-                                Surface(
-                                    shape = RoundedCornerShape(50),
-                                    color = Color(0xFF7F1D1D)
-                                ) {
-                                    Text(
-                                        text = "-10.7%",
-                                        color = Color(0xFFFCA5A5),
-                                        fontSize = 10.sp,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
+                            Text(text = "Expense", color = textSecondary, fontSize = 14.sp)
                             Text(
                                 text = "-1,124$",
                                 color = textPrimary,
@@ -277,7 +222,7 @@ fun DashboardScreen() {
                 }
             }
 
-            // Tarjetas Financieras
+            // Tarjeta Financiera (My Cards)
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -293,21 +238,7 @@ fun DashboardScreen() {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "My cards", color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Surface(
-                                    shape = CircleShape,
-                                    color = cardBgLight
-                                ) {
-                                    Text(
-                                        text = "3",
-                                        color = textSecondary,
-                                        fontSize = 11.sp,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
+                            Text(text = "My cards", color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             Button(
                                 onClick = { },
                                 colors = ButtonDefaults.buttonColors(containerColor = cardBgLight),
