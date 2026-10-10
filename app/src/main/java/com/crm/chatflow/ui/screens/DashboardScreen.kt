@@ -41,7 +41,7 @@ fun DashboardScreen() {
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFF1E283C)),
+                                    .background(cardBgLight),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -121,6 +121,7 @@ fun DashboardScreen() {
                 )
             }
 
+            // Tarjeta de Balance Principal (Gradiente Verde Neón)
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -196,6 +197,7 @@ fun DashboardScreen() {
                 }
             }
 
+            // Fila de Ingresos y Gastos
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -275,6 +277,7 @@ fun DashboardScreen() {
                 }
             }
 
+            // Tarjetas Financieras
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -355,99 +358,6 @@ fun DashboardScreen() {
                     }
                 }
             }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = cardBg)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "Subscriptions", color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Surface(
-                                    shape = CircleShape,
-                                    color = cardBgLight
-                                ) {
-                                    Text(
-                                        text = "5",
-                                        color = textSecondary,
-                                        fontSize = 11.sp,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
-                            TextButton(onClick = { }) {
-                                Text("Manage >", color = Color(0xFF38BDF8), fontSize = 12.sp)
-                            }
-                        }
-
-                        SubscriptionItem(title = "iCloud", date = "Next 15 July", price = "$2.99", cardBgLight, textPrimary, textSecondary)
-                        SubscriptionItem(title = "Discord Nitro", date = "Next 19 July", price = "$8.99", cardBgLight, textPrimary, textSecondary)
-                        SubscriptionItem(title = "Telegram", date = "Next 04 August", price = "$4.99", cardBgLight, textPrimary, textSecondary)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SubscriptionItem(
-    title: String,
-    date: String,
-    price: String,
-    bgColor: Color,
-    textPrimary: Color,
-    textSecondary: Color
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(bgColor)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF0B0F19)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Default.Receipt,
-                    contentDescription = null,
-                    tint = Color(0xFF38BDF8),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            Column {
-                Text(text = title, color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text(text = date, color = textSecondary, fontSize = 11.sp)
-            }
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(text = price, color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Icon(Icons.Default.MoreVert, contentDescription = null, tint = textSecondary, modifier = Modifier.size(16.dp))
         }
     }
 }
