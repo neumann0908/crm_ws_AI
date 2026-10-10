@@ -1,38 +1,52 @@
-package com.crm.chatflow.ai
+package com.neuman.crm.ai
 
 import android.content.Context
-import com.google.mediapipe.tasks.genai.llm.LlmInference
+import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 
+/**
+ * Gestor de Inteligencia Artificial Local utilizando MediaPipe GenAI (LlmInference).
+ * Diseñado para la ejecución offline en el CRM para solopreneurs.
+ */
 class LocalAiParser(private val context: Context) {
 
     private var llmInference: LlmInference? = null
 
-    // Inicializa el modelo local (ej: Gemma o Phi en formato MediaPipe task ubicado en assets)
-    fun initializeModel(modelPath: String) {
-        try {
+    /**
+     * Inicializa el modelo de lenguaje local a partir de la ruta del archivo de modelo (.task) en el dispositivo.
+     */
+    fun initialize(modelPath: String) {
+        if (llmInference == null) {
             val options = LlmInference.LlmInferenceOptions.builder()
                 .setModelPath(modelPath)
                 .setMaxTokens(512)
-                .setTemperature(0.2f)
+                .setTemperature(0.7f)
                 .build()
             
             llmInference = LlmInference.createFromOptions(context, options)
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
-    // Parsea texto de chat para extraer intención o datos de cliente de forma offline
-    suspend fun parseChatText(chatMessage: String): String = withContext(Dispatchers.IO) {
-        val inference = llmInference ?: return@withContext "Modelo de IA no inicializado"
+    /**
+     * Genera una respuesta basada en el texto de entrada (prompt) de forma asíncrona.
+     */
+    suspend fun generateResponse(prompt: String): String = withContext(Dispatchers.IO) {
+        val inference = llmInference 
+            ?: throw IllegalStateException("LlmInference no ha sido inicializado. Asegúrate de llamar a initialize(modelPath) antes de generar respuestas.")
+        
         try {
-            val prompt = "Extrae el nombre, producto de interés y urgencia de este mensaje de cliente: \"$chatMessage\""
-            return@withContext inference.generateResponse(prompt)
+            inference.generateResponse(prompt) ?: "No se pudo generar una respuesta vacía."
         } catch (e: Exception) {
-            return@withContext "Error al procesar con IA local: ${e.localizedMessage}"
+            "Error en la inferencia local: ${e.localizedMessage}"
         }
+    }
+
+    /**
+     * Libera los recursos del modelo cuando ya no se necesiten.
+     */
+    fun close() {
+        llmInference?.close()
+        llmInference = null
     }
 }
