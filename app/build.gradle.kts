@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.neuman.crm"
+    namespace = "com.crm.chatflow"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.neuman.crm"
+        applicationId = "com.crm.chatflow"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -18,6 +18,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        // Restricción de ABI para evitar problemas con librerías nativas de IA
+        ndk {
+            abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
         }
     }
 
