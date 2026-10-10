@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Tema principal basado en Material 3 para Jetpack Compose -->
-    <style name="Theme.ChatFlow" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Personalizaciones opcionales del sistema -->
+    <!-- Tema nativo del sistema compatible con la actividad principal -->
+    <style name="Theme.ChatFlow" parent="android:style/Theme.Material.Light.NoActionBar">
+        <!-- Personalización opcional del fondo de ventana -->
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 </resources>
-
