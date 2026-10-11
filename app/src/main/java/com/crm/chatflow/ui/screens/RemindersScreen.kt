@@ -67,7 +67,7 @@ fun RemindersScreen(
                             onWhatsAppClick = {
                                 val phoneClean = reminder.clientPhone.replace("+", "").trim()
                                 val message = if (reminder.type == "COBRO") {
-                                    "Hola ${reminder.clientName}, te recordamos que tienes un cobro pendiente por '${reminder.concept}' de \$$amountStr. Fecha límite: ${reminder.dueDate}."
+                                    "Hola ${reminder.clientName}, te recordamos que tienes un cobro pendiente por '${reminder.concept}' de \$${reminder.amount}. Fecha límite: ${reminder.dueDate}."
                                 } else {
                                     "Hola ${reminder.clientName}, te recordamos nuestra cita programada para el día ${reminder.dueDate}: ${reminder.concept}."
                                 }
@@ -113,6 +113,7 @@ fun RemindersScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderCard(reminder: ReminderEntity, onToggleComplete: () -> Unit, onDelete: () -> Unit, onWhatsAppClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF161E2E))) {
