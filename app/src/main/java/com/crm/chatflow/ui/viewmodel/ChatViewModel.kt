@@ -15,7 +15,8 @@ import kotlinx.coroutines.launch
 
 data class ChatMessage(
     val text: String,
-    val isUser: Boolean
+    val isUser: Boolean,
+    val isIncome: Boolean = false // Bandera para identificar si es un ingreso registrado
 )
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
@@ -39,16 +40,16 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         if (userText.isBlank()) return
 
         val currentList = _messages.value.toMutableList()
-        currentList.add(ChatMessage(text = userText, isUser = true))
+        currentList.add(ChatMessage(text = userText, isUser = true, isIncome = false))
         _messages.value = currentList
         inputText.value = ""
 
         _isProcessing.value = true
 
         viewModelScope.launch {
-            // Simulación de respuesta IA local y procesamiento de comandos
             val lower = userText.lowercase()
             val botResponse: String
+            var isIncomeResponse = false
 
             if (lower.contains("venta") || lower.contains("ingreso") || lower.contains("pago")) {
                 val amount = extractAmount(userText)
@@ -60,6 +61,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
                 botResponse = "¡Entendido! He registrado la venta de $$amount correctamente."
+                isIncomeResponse = true // Activamos la bandera de ingreso
             } else if (lower.contains("gasto") || lower.contains("compra")) {
                 val amount = extractAmount(userText)
                 repository.insertTransaction(
@@ -70,12 +72,14 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
                 botResponse = "¡Entendido! He registrado el gasto de $$amount correctamente."
+                isIncomeResponse = false // Es gasto, no lleva botón de recibo de cobro
             } else {
                 botResponse = "Procesado: '$userText'. Puedo registrar ventas o gastos si indicas el monto."
+                isIncomeResponse = false
             }
 
             val updatedList = _messages.value.toMutableList()
-            updatedList.add(ChatMessage(text = botResponse, isUser = false))
+            updatedList.add(ChatMessage(text = botResponse, isUser = false, isIncome = isIncomeResponse))
             _messages.value = updatedList
             _isProcessing.value = false
         }
