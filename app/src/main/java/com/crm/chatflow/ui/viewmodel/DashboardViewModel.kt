@@ -26,7 +26,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     init {
         val db = CrmDatabase.getDatabase(application)
-        repository = CrmRepository(db.clientDao(), db.transactionDao())
+        repository = CrmRepository(db.clientDao(), db.transactionDao(), db.reminderDao())
 
         totalIncome = repository.totalIncome.stateIn(
             scope = viewModelScope,
@@ -40,7 +40,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             initialValue = 0.0
         )
 
-        // Combinar la lista base con el filtro de texto y tipo
         transactions = combine(
             repository.allTransactions,
             searchQuery,
