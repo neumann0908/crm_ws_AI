@@ -143,6 +143,7 @@ fun RemindersScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderCard(
     reminder: ReminderEntity,
