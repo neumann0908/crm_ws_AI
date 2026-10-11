@@ -102,7 +102,8 @@ fun ChatScreen() {
                     ) {
                         items(messages) { message ->
                             ChatBubble(
-                                message = message,
+                                text = message.text,
+                                isUser = message.isUser,
                                 cardBg = cardBg,
                                 textPrimary = textPrimary,
                                 textSecondary = textSecondary,
@@ -166,15 +167,14 @@ fun ChatScreen() {
 
 @Composable
 fun ChatBubble(
-    message: com.crm.chatflow.ui.viewmodel.ChatMessage,
+    text: String,
+    isUser: Boolean,
     cardBg: Color,
     textPrimary: Color,
     textSecondary: Color,
     accentGreen: Color
 ) {
     val context = LocalContext.current
-    val isUser = message.isUser
-
     val bubbleColor = if (isUser) Color(0xFF1E283C) else cardBg
     val alignment = if (isUser) Alignment.End else Alignment.Start
 
@@ -197,20 +197,20 @@ fun ChatBubble(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = message.text,
+                    text = text,
                     color = textPrimary,
                     fontSize = 14.sp
                 )
 
-                // Si la respuesta del asistente contiene confirmación de transacción / monto, mostramos tarjeta interactiva con opción de WhatsApp
-                if (!isUser && (message.text.contains("registrado") || message.text.contains("venta") || message.text.contains("$"))) {
+                // Si la respuesta del asistente confirma la transacción, muestra la tarjeta con botón de WhatsApp
+                if (!isUser && (text.contains("registrado") || text.contains("venta") || text.contains("$"))) {
                     Divider(color = Color(0xFF2B364C), thickness = 1.dp)
 
                     Button(
                         onClick = {
                             val receiptText = ReceiptHelper.generateReceiptText(
                                 title = "Transacción vía Chat IA",
-                                amount = 50.0, // Monto genérico o extraído de la conversación
+                                amount = 50.0,
                                 type = "INCOME"
                             )
                             WhatsAppHelper.sendMessage(context, "", receiptText)
