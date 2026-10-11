@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import com.crm.chatflow.data.local.entity.ClientEntity
 import com.crm.chatflow.ui.viewmodel.ClientViewModel
+import com.crm.chatflow.utils.WhatsAppHelper
 
 @Composable
 fun ClientsScreen() {
@@ -122,7 +124,13 @@ fun ClientsScreen() {
                         modifier = Modifier.weight(1f)
                     ) {
                         items(clients, key = { it.id }) { client ->
-                            ClientItemCard(client = client, cardBg = cardBg, textPrimary = textPrimary, textSecondary = textSecondary)
+                            ClientItemCard(
+                                client = client,
+                                cardBg = cardBg,
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                accentGreen = accentGreen
+                            )
                         }
                     }
                 }
@@ -147,8 +155,11 @@ fun ClientItemCard(
     client: ClientEntity,
     cardBg: Color,
     textPrimary: Color,
-    textSecondary: Color
+    textSecondary: Color,
+    accentGreen: Color
 ) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -156,7 +167,7 @@ fun ClientItemCard(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -176,7 +187,9 @@ fun ClientItemCard(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(text = client.name, color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text(text = client.email, color = textSecondary, fontSize = 12.sp)
+                        if (client.email.isNotBlank()) {
+                            Text(text = client.email, color = textSecondary, fontSize = 12.sp)
+                        }
                     }
                 }
 
@@ -195,10 +208,43 @@ fun ClientItemCard(
             }
 
             if (client.phone.isNotBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Phone, contentDescription = null, tint = textSecondary, modifier = Modifier.size(14.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = client.phone, color = textSecondary, fontSize = 13.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Phone, contentDescription = null, tint = textSecondary, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(text = client.phone, color = textSecondary, fontSize = 13.sp)
+                    }
+
+                    // Botón para contactar por WhatsApp
+                    Button(
+                        onClick = {
+                            val defaultMessage = "¡Hola ${client.name}! Te escribo desde el CRM de negocio. ¿En qué te podemos ayudar hoy?"
+                            WhatsAppHelper.sendMessage(context, client.phone, defaultMessage)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF25D366),
+                            contentColor = Color.Black
+                        ),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "WhatsApp",
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "WhatsApp",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
