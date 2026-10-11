@@ -52,7 +52,7 @@ fun ChatScreen() {
 
     val listState = rememberLazyListState()
 
-    // Auto-scroll al último mensaje
+    // Auto-scroll
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
@@ -68,7 +68,6 @@ fun ChatScreen() {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Título
             Text(
                 text = "Asistente IA",
                 style = MaterialTheme.typography.headlineMedium,
@@ -77,7 +76,6 @@ fun ChatScreen() {
                 modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
             )
 
-            // Lista de Mensajes
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -106,7 +104,6 @@ fun ChatScreen() {
                                 isUser = message.isUser,
                                 cardBg = cardBg,
                                 textPrimary = textPrimary,
-                                textSecondary = textSecondary,
                                 accentGreen = accentGreen
                             )
                         }
@@ -116,7 +113,6 @@ fun ChatScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Barra de Entrada de Texto y Botón Enviar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -171,7 +167,6 @@ fun ChatBubble(
     isUser: Boolean,
     cardBg: Color,
     textPrimary: Color,
-    textSecondary: Color,
     accentGreen: Color
 ) {
     val context = LocalContext.current
@@ -202,7 +197,6 @@ fun ChatBubble(
                     fontSize = 14.sp
                 )
 
-                // Si la respuesta del asistente confirma la transacción, muestra la tarjeta con botón de WhatsApp
                 if (!isUser && (text.contains("registrado") || text.contains("venta") || text.contains("$"))) {
                     Divider(color = Color(0xFF2B364C), thickness = 1.dp)
 
