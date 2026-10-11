@@ -198,7 +198,7 @@ fun ClientItemCard(
             }
 
             if (client.notes.isNotBlank()) {
-                HorizontalDivider(color = Color(0xFF2B364C), thickness = 1.dp)
+                Divider(color = Color(0xFF2B364C), thickness = 1.dp)
                 Text(
                     text = "Notas: ${client.notes}",
                     color = textSecondary,
