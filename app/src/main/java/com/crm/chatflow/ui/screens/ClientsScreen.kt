@@ -10,10 +10,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,14 +42,11 @@ fun ClientsScreen() {
 
     val darkBg = Color(0xFF0B0F19)
     val cardBg = Color(0xFF161E2E)
-    val cardBgLight = Color(0xFF1E283C)
     val textPrimary = Color(0xFFFFFFFF)
     val textSecondary = Color(0xFF94A3B8)
     val accentGreen = Color(0xFF34D399)
 
     val clients by viewModel.clients.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-
     var showAddDialog by remember { mutableStateOf(false) }
 
     Surface(
@@ -66,7 +62,7 @@ fun ClientsScreen() {
                     contentColor = Color.Black,
                     shape = CircleShape
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Añadir Cliente")
+                    Icon(Icons.Default.Add, contentDescription = "Nuevo Cliente")
                 }
             }
         ) { paddingValues ->
@@ -77,55 +73,36 @@ fun ClientsScreen() {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Título
                 Text(
-                    text = "Clientes",
+                    text = "Gestión de Clientes",
                     style = MaterialTheme.typography.headlineMedium,
                     color = textPrimary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
-                // Buscador
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { viewModel.searchQuery.value = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Buscar cliente por nombre o email...", color = textSecondary) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = textSecondary) },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = cardBg,
-                        unfocusedContainerColor = cardBg,
-                        focusedBorderColor = accentGreen,
-                        unfocusedBorderColor = cardBgLight,
-                        focusedTextColor = textPrimary,
-                        unfocusedTextColor = textPrimary
-                    )
-                )
-
-                // Lista de Clientes
                 if (clients.isEmpty()) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (searchQuery.isBlank()) "No hay clientes registrados." else "No se encontraron resultados.",
+                            text = "No hay clientes registrados.",
                             color = textSecondary,
                             fontSize = 14.sp
                         )
                     }
                 } else {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.weight(1f)
                     ) {
                         items(clients, key = { it.id }) { client ->
                             ClientItemCard(
                                 client = client,
+                                onDelete = { viewModel.deleteClient(client) },
                                 cardBg = cardBg,
                                 textPrimary = textPrimary,
                                 textSecondary = textSecondary,
@@ -138,12 +115,11 @@ fun ClientsScreen() {
         }
     }
 
-    // Diálogo para agregar cliente
     if (showAddDialog) {
         AddClientDialog(
             onDismiss = { showAddDialog = false },
-            onConfirm = { name, email, phone, status, notes ->
-                viewModel.addClient(name, email, phone, status, notes)
+            onConfirm = { name, phone, notes ->
+                viewModel.addClient(name, phone, notes)
                 showAddDialog = false
             }
         )
@@ -153,6 +129,7 @@ fun ClientsScreen() {
 @Composable
 fun ClientItemCard(
     client: ClientEntity,
+    onDelete: () -> Unit,
     cardBg: Color,
     textPrimary: Color,
     textSecondary: Color,
@@ -166,90 +143,86 @@ fun ClientItemCard(
         colors = CardDefaults.cardColors(containerColor = cardBg)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF1E283C)),
+                            .background(accentGreen.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF38BDF8))
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            tint = accentGreen,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Column {
-                        Text(text = client.name, color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        if (client.email.isNotBlank()) {
-                            Text(text = client.email, color = textSecondary, fontSize = 12.sp)
-                        }
+                        Text(
+                            text = client.name,
+                            color = textPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                        Text(
+                            text = client.phone,
+                            color = textSecondary,
+                            fontSize = 13.sp
+                        )
                     }
                 }
 
-                Surface(
-                    shape = RoundedCornerShape(50),
-                    color = if (client.status == "Activo") Color(0xFF059669).copy(alpha = 0.2f) else Color(0xFFEAB308).copy(alpha = 0.2f)
-                ) {
-                    Text(
-                        text = client.status,
-                        color = if (client.status == "Activo") Color(0xFF34D399) else Color(0xFFFACC15),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar",
+                        tint = Color(0xFFF87171),
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            if (client.phone.isNotBlank()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Phone, contentDescription = null, tint = textSecondary, modifier = Modifier.size(14.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(text = client.phone, color = textSecondary, fontSize = 13.sp)
-                    }
-
-                    // Botón para contactar por WhatsApp
-                    Button(
-                        onClick = {
-                            val defaultMessage = "¡Hola ${client.name}! Te escribo desde el CRM de negocio. ¿En qué te podemos ayudar hoy?"
-                            WhatsAppHelper.sendMessage(context, client.phone, defaultMessage)
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF25D366),
-                            contentColor = Color.Black
-                        ),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.height(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Send,
-                            contentDescription = "WhatsApp",
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "WhatsApp",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+            if (client.notes.isNotBlank()) {
+                Divider(color = Color(0xFF2B364C), thickness = 1.dp)
+                Text(
+                    text = "Notas: ${client.notes}",
+                    color = textSecondary,
+                    fontSize = 12.sp
+                )
             }
 
-            if (client.notes.isNotBlank()) {
-                Text(text = client.notes, color = textSecondary.copy(alpha = 0.8f), fontSize = 12.sp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = {
+                        WhatsAppHelper.sendMessage(context, client.phone, "Hola ${client.name}, te escribo desde CRM ChatFlow.")
+                    },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "WhatsApp",
+                        tint = Color(0xFF25D366),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
         }
     }
@@ -258,12 +231,10 @@ fun ClientItemCard(
 @Composable
 fun AddClientDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String, String, String, String, String) -> Unit
+    onConfirm: (String, String, String) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("Activo") }
     var notes by remember { mutableStateOf("") }
 
     AlertDialog(
@@ -279,12 +250,6 @@ fun AddClientDialog(
                     singleLine = true
                 )
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    singleLine = true
-                )
-                OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
                     label = { Text("Teléfono") },
@@ -293,15 +258,16 @@ fun AddClientDialog(
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = { Text("Notas") }
+                    label = { Text("Notas / Empresa") },
+                    singleLine = true
                 )
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    if (name.isNotBlank()) {
-                        onConfirm(name, email, phone, status, notes)
+                    if (name.isNotBlank() && phone.isNotBlank()) {
+                        onConfirm(name, phone, notes)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF34D399))
