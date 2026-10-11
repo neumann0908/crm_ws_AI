@@ -52,10 +52,22 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             val botResponse: String
             var isIncomeResponse = false
 
-            if (lower.contains("cliente") || lower.contains("contacto") || lower.contains("agregar cliente")) {
-                val words = userText.split(" ")
-                val clientName = words.getOrNull(1) ?: "Nuevo Cliente"
-                val phone = words.find { it.contains(Regex("\\d{7,}")) } ?: "04140000000"
+            if (lower.contains("cliente") || lower.contains("contacto") || lower.contains("agregar")) {
+                // Extracción inteligente de teléfono y nombre
+                val phoneMatch = Regex("\\d{7,15}").find(userText)
+                val phone = phoneMatch?.value ?: "04140000000"
+
+                val cleanedName = userText
+                    .replace("agregar", "", ignoreCase = true)
+                    .replace("cliente", "", ignoreCase = true)
+                    .replace("contacto", "", ignoreCase = true)
+                    .replace("con", "", ignoreCase = true)
+                    .replace("telefono", "", ignoreCase = true)
+                    .replace("teléfono", "", ignoreCase = true)
+                    .replace(phone, "")
+                    .trim()
+
+                val clientName = if (cleanedName.isBlank()) "Cliente IA" else cleanedName.replaceFirstChar { it.uppercase() }
 
                 repository.insertClient(
                     ClientEntity(
@@ -66,7 +78,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                         status = "ACTIVE"
                     )
                 )
-                botResponse = "¡Cliente '$clientName' registrado con éxito y guardado en tu lista de clientes!"
+                botResponse = "¡Cliente '$clientName' ($phone) registrado con éxito y guardado en tu lista de clientes!"
             } else if (lower.contains("venta") || lower.contains("ingreso") || lower.contains("pago")) {
                 val amount = extractAmount(userText)
                 repository.insertTransaction(
