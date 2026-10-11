@@ -14,14 +14,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ReminderViewModel(application: Application) : AndroidViewModel(application) {
-
     private val repository: CrmRepository
+
     val reminders: StateFlow<List<ReminderEntity>>
 
     init {
         val db = CrmDatabase.getDatabase(application)
         repository = CrmRepository(db.clientDao(), db.transactionDao(), db.reminderDao())
-
         reminders = repository.allReminders.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -29,25 +28,25 @@ class ReminderViewModel(application: Application) : AndroidViewModel(application
         )
     }
 
-    fun addReminder(clientName: String, title: String, amount: Double, dueDate: String, type: String) {
+    fun addReminder(clientName: String, clientPhone: String, concept: String, amount: Double, dueDate: String, type: String) {
         viewModelScope.launch {
             repository.insertReminder(
                 ReminderEntity(
                     clientName = clientName,
-                    title = title,
+                    clientPhone = clientPhone,
+                    concept = concept,
                     amount = amount,
                     dueDate = dueDate,
-                    type = type
+                    type = type,
+                    isCompleted = false
                 )
             )
         }
     }
 
-    fun toggleReminderCompletion(reminder: ReminderEntity) {
+    fun toggleComplete(reminder: ReminderEntity) {
         viewModelScope.launch {
-            repository.updateReminder(
-                reminder.copy(isCompleted = !reminder.isCompleted)
-            )
+            repository.updateReminder(reminder.copy(isCompleted = !reminder.isCompleted))
         }
     }
 
