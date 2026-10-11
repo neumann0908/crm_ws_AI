@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import com.crm.chatflow.data.local.entity.TransactionEntity
 import com.crm.chatflow.ui.viewmodel.DashboardViewModel
+import com.crm.chatflow.ui.viewmodel.TransactionFilter
 import com.crm.chatflow.utils.ReceiptHelper
 import com.crm.chatflow.utils.WhatsAppHelper
 
@@ -43,14 +45,15 @@ fun DashboardScreen() {
 
     val darkBg = Color(0xFF0B0F19)
     val cardBg = Color(0xFF161E2E)
+    val cardBgLight = Color(0xFF1E283C)
     val textPrimary = Color(0xFFFFFFFF)
     val textSecondary = Color(0xFF94A3B8)
     val accentGreen = Color(0xFF34D399)
     val accentRed = Color(0xFFF87171)
 
     val transactions by viewModel.transactions.collectAsState()
-    val totalIncome by viewModel.totalIncome.collectAsState()
-    val totalExpense by viewModel.totalExpense.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val activeFilter by viewModel.selectedFilter.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -76,7 +79,7 @@ fun DashboardScreen() {
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
                     text = "Mi Panel",
@@ -86,70 +89,48 @@ fun DashboardScreen() {
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
-                // Tarjeta de Balance
-                Card(
+                // Buscador
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.searchQuery.value = it },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = cardBg)
+                    placeholder = { Text("Buscar movimiento...", color = textSecondary) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = textSecondary) },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = cardBg,
+                        unfocusedContainerColor = cardBg,
+                        focusedBorderColor = accentGreen,
+                        unfocusedBorderColor = cardBgLight,
+                        focusedTextColor = textPrimary,
+                        unfocusedTextColor = textPrimary
+                    )
+                )
+
+                // Filtros Rápido por Tipo
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text("Balance Total", color = textSecondary, fontSize = 14.sp)
-                        val incomeVal = totalIncome ?: 0.0
-                        val expenseVal = totalExpense ?: 0.0
-                        val balance = incomeVal - expenseVal
-                        Text(
-                            text = "$${String.format("%.2f", balance)}",
-                            color = textPrimary,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
-                                        .background(accentGreen.copy(alpha = 0.2f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = accentGreen, modifier = Modifier.size(18.dp))
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text("Ingresos", color = textSecondary, fontSize = 11.sp)
-                                    Text("+$${String.format("%.2f", incomeVal)}", color = accentGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                }
-                            }
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
-                                        .background(accentRed.copy(alpha = 0.2f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.ArrowDownward, contentDescription = null, tint = accentRed, modifier = Modifier.size(18.dp))
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text("Gastos", color = textSecondary, fontSize = 11.sp)
-                                    Text("-$${String.format("%.2f", expenseVal)}", color = accentRed, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                }
-                            }
-                        }
-                    }
+                    FilterChip(
+                        selected = activeFilter == TransactionFilter.ALL,
+                        onClick = { viewModel.selectedFilter.value = TransactionFilter.ALL },
+                        label = { Text("Todos") }
+                    )
+                    FilterChip(
+                        selected = activeFilter == TransactionFilter.INCOME,
+                        onClick = { viewModel.selectedFilter.value = TransactionFilter.INCOME },
+                        label = { Text("Ingresos") }
+                    )
+                    FilterChip(
+                        selected = activeFilter == TransactionFilter.EXPENSE,
+                        onClick = { viewModel.selectedFilter.value = TransactionFilter.EXPENSE },
+                        label = { Text("Gastos") }
+                    )
                 }
 
                 Text(
-                    text = "Movimientos Recientes",
+                    text = "Movimientos",
                     style = MaterialTheme.typography.titleMedium,
                     color = textPrimary,
                     fontWeight = FontWeight.Bold
@@ -162,7 +143,11 @@ fun DashboardScreen() {
                             .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("No hay transacciones registradas.", color = textSecondary, fontSize = 14.sp)
+                        Text(
+                            text = if (searchQuery.isBlank()) "No hay movimientos registrados." else "No se encontraron resultados.",
+                            color = textSecondary,
+                            fontSize = 14.sp
+                        )
                     }
                 } else {
                     LazyColumn(
@@ -239,7 +224,12 @@ fun TransactionItemCard(
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text(text = transaction.title, color = textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                    Text(
+                        text = transaction.title,
+                        color = textPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
+                    )
                     Text(
                         text = if (isIncome) "Venta" else "Gasto",
                         color = textSecondary,
@@ -258,7 +248,6 @@ fun TransactionItemCard(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Botón para compartir comprobante por WhatsApp
                 IconButton(
                     onClick = {
                         val receiptText = ReceiptHelper.generateReceiptText(
