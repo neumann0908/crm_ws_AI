@@ -52,7 +52,6 @@ fun ChatScreen() {
 
     val listState = rememberLazyListState()
 
-    // Auto-scroll
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
@@ -102,6 +101,7 @@ fun ChatScreen() {
                             ChatBubble(
                                 text = message.text,
                                 isUser = message.isUser,
+                                isIncome = message.isIncome,
                                 cardBg = cardBg,
                                 textPrimary = textPrimary,
                                 accentGreen = accentGreen
@@ -165,6 +165,7 @@ fun ChatScreen() {
 fun ChatBubble(
     text: String,
     isUser: Boolean,
+    isIncome: Boolean,
     cardBg: Color,
     textPrimary: Color,
     accentGreen: Color
@@ -197,7 +198,8 @@ fun ChatBubble(
                     fontSize = 14.sp
                 )
 
-                if (!isUser && (text.contains("registrado") || text.contains("venta") || text.contains("$"))) {
+                // El botón solo aparece si el mensaje proviene del bot Y corresponde a un ingreso registrado
+                if (!isUser && isIncome) {
                     Divider(color = Color(0xFF2B364C), thickness = 1.dp)
 
                     Button(
