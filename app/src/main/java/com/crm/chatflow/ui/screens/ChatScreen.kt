@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,8 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
-import com.crm.chatflow.ui.viewmodel.ChatMessage
 import com.crm.chatflow.ui.viewmodel.ChatViewModel
+import com.crm.chatflow.utils.ReceiptHelper
+import com.crm.chatflow.utils.WhatsAppHelper
 
 @Composable
 fun ChatScreen() {
@@ -45,10 +47,12 @@ fun ChatScreen() {
     val accentGreen = Color(0xFF34D399)
 
     val messages by viewModel.messages.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    var inputMessage by remember { mutableStateOf("") }
+    val inputText by viewModel.inputText.collectAsState()
+    val isProcessing by viewModel.isProcessing.collectAsState()
+
     val listState = rememberLazyListState()
 
+    // Auto-scroll al último mensaje
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
@@ -64,59 +68,65 @@ fun ChatScreen() {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            // Título
             Text(
                 text = "Asistente IA",
                 style = MaterialTheme.typography.headlineMedium,
                 color = textPrimary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+                modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
             )
 
-            LazyColumn(
-                state = listState,
+            // Lista de Mensajes
+            Box(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .fillMaxWidth()
             ) {
-                items(messages) { message ->
-                    MessageBubble(message = message, cardBg = cardBg, textPrimary = textPrimary, accentGreen = accentGreen)
-                }
-                if (isLoading) {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(16.dp),
-                                color = cardBg
-                            ) {
-                                Text(
-                                    text = "Ethereal IA está pensando...",
-                                    color = textSecondary,
-                                    fontSize = 13.sp,
-                                    modifier = Modifier.padding(12.dp)
-                                )
-                            }
+                if (messages.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Escribe un comando, ej: 'Venta de 50 por diseño'",
+                            color = textSecondary,
+                            fontSize = 14.sp
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(messages) { message ->
+                            ChatBubble(
+                                message = message,
+                                cardBg = cardBg,
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                accentGreen = accentGreen
+                            )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
+            // Barra de Entrada de Texto y Botón Enviar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField(
-                    value = inputMessage,
-                    onValueChange = { inputMessage = it },
+                    value = inputText,
+                    onValueChange = { viewModel.inputText.value = it },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Escribe un mensaje...", color = textSecondary) },
-                    shape = RoundedCornerShape(24.dp),
+                    placeholder = { Text("Escribe una orden a la IA...", color = textSecondary) },
+                    shape = RoundedCornerShape(20.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = cardBg,
                         unfocusedContainerColor = cardBg,
@@ -128,24 +138,26 @@ fun ChatScreen() {
                     maxLines = 3
                 )
 
-                IconButton(
+                FloatingActionButton(
                     onClick = {
-                        if (inputMessage.isNotBlank()) {
-                            viewModel.sendMessage(inputMessage)
-                            inputMessage = ""
+                        if (inputText.isNotBlank() && !isProcessing) {
+                            viewModel.sendMessage(inputText)
                         }
                     },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(accentGreen)
+                    containerColor = accentGreen,
+                    contentColor = Color.Black,
+                    shape = CircleShape,
+                    modifier = Modifier.size(50.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Send,
-                        contentDescription = "Enviar",
-                        tint = Color.Black,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    if (isProcessing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.Black,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Default.Send, contentDescription = "Enviar")
+                    }
                 }
             }
         }
@@ -153,16 +165,22 @@ fun ChatScreen() {
 }
 
 @Composable
-fun MessageBubble(
-    message: ChatMessage,
+fun ChatBubble(
+    message: com.crm.chatflow.ui.viewmodel.ChatMessage,
     cardBg: Color,
     textPrimary: Color,
+    textSecondary: Color,
     accentGreen: Color
 ) {
+    val context = LocalContext.current
     val isUser = message.isUser
-    Row(
+
+    val bubbleColor = if (isUser) Color(0xFF1E283C) else cardBg
+    val alignment = if (isUser) Alignment.End else Alignment.Start
+
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+        horizontalAlignment = alignment
     ) {
         Surface(
             shape = RoundedCornerShape(
@@ -171,15 +189,56 @@ fun MessageBubble(
                 bottomStart = if (isUser) 16.dp else 4.dp,
                 bottomEnd = if (isUser) 4.dp else 16.dp
             ),
-            color = if (isUser) accentGreen else cardBg,
-            modifier = Modifier.widthIn(max = 280.dp)
+            color = bubbleColor,
+            modifier = Modifier.widthIn(max = 300.dp)
         ) {
-            Text(
-                text = message.text,
-                color = if (isUser) Color.Black else textPrimary,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(12.dp)
-            )
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = message.text,
+                    color = textPrimary,
+                    fontSize = 14.sp
+                )
+
+                // Si la respuesta del asistente contiene confirmación de transacción / monto, mostramos tarjeta interactiva con opción de WhatsApp
+                if (!isUser && (message.text.contains("registrado") || message.text.contains("venta") || message.text.contains("$"))) {
+                    Divider(color = Color(0xFF2B364C), thickness = 1.dp)
+
+                    Button(
+                        onClick = {
+                            val receiptText = ReceiptHelper.generateReceiptText(
+                                title = "Transacción vía Chat IA",
+                                amount = 50.0, // Monto genérico o extraído de la conversación
+                                type = "INCOME"
+                            )
+                            WhatsAppHelper.sendMessage(context, "", receiptText)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF25D366),
+                            contentColor = Color.Black
+                        ),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(30.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "WhatsApp",
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Enviar Recibo por WhatsApp",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
         }
     }
 }
