@@ -8,14 +8,17 @@ import androidx.lifecycle.viewModelScope
 import com.crm.chatflow.data.CrmRepository
 import com.crm.chatflow.data.local.database.CrmDatabase
 import com.crm.chatflow.data.local.entity.TransactionEntity
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+
+enum class TransactionFilter { ALL, INCOME, EXPENSE }
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: CrmRepository
+
+    val searchQuery = MutableStateFlow("")
+    val selectedFilter = MutableStateFlow(TransactionFilter.ALL)
 
     val transactions: StateFlow<List<TransactionEntity>>
     val totalIncome: StateFlow<Double?>
@@ -24,12 +27,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     init {
         val db = CrmDatabase.getDatabase(application)
         repository = CrmRepository(db.clientDao(), db.transactionDao())
-
-        transactions = repository.allTransactions.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
 
         totalIncome = repository.totalIncome.stateIn(
             scope = viewModelScope,
@@ -41,6 +38,27 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = 0.0
+        )
+
+        // Combinar la lista base con el filtro de texto y tipo
+        transactions = combine(
+            repository.allTransactions,
+            searchQuery,
+            selectedFilter
+        ) { list, query, filter ->
+            list.filter { item ->
+                val matchesQuery = item.title.contains(query, ignoreCase = true)
+                val matchesFilter = when (filter) {
+                    TransactionFilter.ALL -> true
+                    TransactionFilter.INCOME -> item.type == "INCOME"
+                    TransactionFilter.EXPENSE -> item.type == "EXPENSE"
+                }
+                matchesQuery && matchesFilter
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
         )
     }
 
