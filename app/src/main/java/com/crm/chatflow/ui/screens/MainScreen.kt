@@ -2,6 +2,7 @@ package com.crm.chatflow.ui.screens
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -51,6 +52,19 @@ fun MainScreen() {
                         unselectedTextColor = textSecondary
                     )
                 )
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    icon = { Icon(Icons.Default.Create, contentDescription = "Asistente") },
+                    label = { Text("Asistente") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Black,
+                        selectedTextColor = accentGreen,
+                        indicatorColor = accentGreen,
+                        unselectedIconColor = textSecondary,
+                        unselectedTextColor = textSecondary
+                    )
+                )
             }
         }
     ) { paddingValues ->
@@ -61,6 +75,7 @@ fun MainScreen() {
             when (selectedTab) {
                 0 -> DashboardScreen()
                 1 -> ClientsScreen()
+                2 -> ChatScreen()
             }
         }
     }
