@@ -5,23 +5,46 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.crm.chatflow.data.CrmRepository
+import com.crm.chatflow.data.local.database.CrmDatabase
+import com.crm.chatflow.data.local.entity.ClientEntity
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ChatViewModel(application: Application) : AndroidViewModel(application) {
+class ClientViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: CrmRepository
+    val clients: StateFlow<List<ClientEntity>>
 
-    // Estado para manejar los mensajes o interacciones del chat con IA
-    private val _messages = MutableStateFlow<List<String>>(emptyList())
-    val messages: StateFlow<List<String>> = _messages.asStateFlow()
+    init {
+        val db = CrmDatabase.getDatabase(application)
+        repository = CrmRepository(db.clientDao(), db.transactionDao(), db.reminderDao())
+        clients = repository.allClients.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+    }
 
-    fun sendMessage(userMessage: String) {
+    fun addClient(name: String, phone: String, notes: String) {
         viewModelScope.launch {
-            // Aquí puedes integrar la lógica de MediaPipe / procesamiento de IA o mensajes
-            val currentList = _messages.value.toMutableList()
-            currentList.add("Tú: $userMessage")
-            _messages.value = currentList
+            repository.insertClient(
+                ClientEntity(
+                    name = name,
+                    phone = phone,
+                    email = "",
+                    notes = notes,
+                    status = "ACTIVE"
+                )
+            )
+        }
+    }
+
+    fun deleteClient(client: ClientEntity) {
+        viewModelScope.launch {
+            val db = CrmDatabase.getDatabase(getApplication())
+            db.clientDao().delete(client)
         }
     }
 
@@ -30,7 +53,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return ChatViewModel(application) as T
+                    return ClientViewModel(application) as T
                 }
             }
     }
