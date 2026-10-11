@@ -5,15 +5,22 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.crm.chatflow.data.local.dao.ClientDao
+import com.crm.chatflow.data.local.dao.ReminderDao
 import com.crm.chatflow.data.local.dao.TransactionDao
 import com.crm.chatflow.data.local.entity.ClientEntity
+import com.crm.chatflow.data.local.entity.ReminderEntity
 import com.crm.chatflow.data.local.entity.TransactionEntity
 
-@Database(entities = [ClientEntity::class, TransactionEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [ClientEntity::class, TransactionEntity::class, ReminderEntity::class],
+    version = 2,
+    exportSchema = false
+)
 abstract class CrmDatabase : RoomDatabase() {
 
     abstract fun clientDao(): ClientDao
     abstract fun transactionDao(): TransactionDao
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         @Volatile
@@ -25,7 +32,9 @@ abstract class CrmDatabase : RoomDatabase() {
                     context.applicationContext,
                     CrmDatabase::class.java,
                     "crm_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }
