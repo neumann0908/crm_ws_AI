@@ -9,9 +9,6 @@ interface ClientDao {
     @Query("SELECT * FROM clients ORDER BY id DESC")
     fun getAllClients(): Flow<List<ClientEntity>>
 
-    @Query("SELECT COUNT(*) FROM clients")
-    fun getClientCount(): Flow<Int>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertClient(client: ClientEntity)
 
