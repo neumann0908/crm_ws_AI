@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.crm.chatflow.data.CrmRepository
 import com.crm.chatflow.data.local.database.CrmDatabase
+import com.crm.chatflow.data.local.entity.ClientEntity
 import com.crm.chatflow.data.local.entity.TransactionEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +52,22 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             val botResponse: String
             var isIncomeResponse = false
 
-            if (lower.contains("venta") || lower.contains("ingreso") || lower.contains("pago")) {
+            if (lower.contains("cliente") || lower.contains("contacto") || lower.contains("agregar cliente")) {
+                val words = userText.split(" ")
+                val clientName = words.getOrNull(1) ?: "Nuevo Cliente"
+                val phone = words.find { it.contains(Regex("\\d{7,}")) } ?: "04140000000"
+
+                repository.insertClient(
+                    ClientEntity(
+                        name = clientName,
+                        phone = phone,
+                        notes = userText,
+                        email = "",
+                        status = "ACTIVE"
+                    )
+                )
+                botResponse = "¡Cliente '$clientName' registrado con éxito y guardado en tu lista de clientes!"
+            } else if (lower.contains("venta") || lower.contains("ingreso") || lower.contains("pago")) {
                 val amount = extractAmount(userText)
                 repository.insertTransaction(
                     TransactionEntity(
@@ -74,7 +90,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 botResponse = "¡Entendido! He registrado el gasto de $$amount correctamente."
                 isIncomeResponse = false
             } else {
-                botResponse = "Procesado: '$userText'. Puedo registrar ventas o gastos si indicas el monto."
+                botResponse = "Procesado: '$userText'. Puedo registrar clientes, ventas o gastos si me das los detalles."
                 isIncomeResponse = false
             }
 
