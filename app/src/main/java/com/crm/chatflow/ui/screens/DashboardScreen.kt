@@ -5,28 +5,29 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
+import com.crm.chatflow.data.local.entity.TransactionEntity
 import com.crm.chatflow.ui.viewmodel.DashboardViewModel
+import com.crm.chatflow.utils.ReceiptHelper
+import com.crm.chatflow.utils.WhatsAppHelper
 
 @Composable
 fun DashboardScreen() {
@@ -42,275 +43,300 @@ fun DashboardScreen() {
 
     val darkBg = Color(0xFF0B0F19)
     val cardBg = Color(0xFF161E2E)
-    val cardBgLight = Color(0xFF1E283C)
     val textPrimary = Color(0xFFFFFFFF)
     val textSecondary = Color(0xFF94A3B8)
+    val accentGreen = Color(0xFF34D399)
+    val accentRed = Color(0xFFF87171)
 
-    val balance by viewModel.totalBalance.collectAsState()
-    val income by viewModel.totalIncome.collectAsState()
-    val expense by viewModel.totalExpense.collectAsState()
+    val transactions by viewModel.transactions.collectAsState()
+    val totalIncome by viewModel.totalIncome.collectAsState()
+    val totalExpense by viewModel.totalExpense.collectAsState()
+
+    var showAddDialog by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = darkBg
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Header
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+        Scaffold(
+            containerColor = darkBg,
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { showAddDialog = true },
+                    containerColor = accentGreen,
+                    contentColor = Color.Black,
+                    shape = CircleShape
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(cardBgLight),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "E",
-                                color = Color(0xFF38BDF8),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "ethereal",
-                            color = textPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    }
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        IconButton(
-                            onClick = { },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(cardBg)
-                        ) {
-                            Icon(
-                                Icons.Default.Search,
-                                contentDescription = "Buscar",
-                                tint = textSecondary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                        IconButton(
-                            onClick = { },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(cardBg)
-                        ) {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Notificaciones",
-                                tint = textSecondary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
+                    Icon(Icons.Default.Add, contentDescription = "Nueva Transacción")
                 }
             }
-
-            // Título principal
-            item {
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Text(
                     text = "Mi Panel",
                     style = MaterialTheme.typography.headlineMedium,
                     color = textPrimary,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
-            }
 
-            // Tarjeta de Balance General (Dinámica con Room)
-            item {
+                // Tarjeta de Balance
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(Color(0xFF86EFAC), Color(0xFF34D399), Color(0xFF059669))
-                                )
-                            )
-                            .padding(24.dp)
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(
-                                text = "Balance total",
-                                color = Color(0xFF064E3B),
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 15.sp
-                            )
-                            Text(
-                                text = String.format("%.2f $", balance),
-                                color = Color(0xFF022C22),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 32.sp
-                            )
-                            Text(
-                                text = "Actualizado en tiempo real (Local)",
-                                color = Color(0xFF064E3B),
-                                fontSize = 12.sp
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Button(
-                                    onClick = { viewModel.addTransaction("Venta rápida", 150.0, "INCOME") },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                                    shape = RoundedCornerShape(50)
-                                ) {
-                                    Text("+ Venta", color = Color.White, fontSize = 13.sp)
-                                }
-                                Button(
-                                    onClick = { viewModel.addTransaction("Gasto operativo", 45.0, "EXPENSE") },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                                    shape = RoundedCornerShape(50)
-                                ) {
-                                    Text("+ Gasto", color = Color.Black, fontSize = 13.sp)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Fila de Ingresos y Gastos (Dinámicos)
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = cardBg)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "Ingresos", color = textSecondary, fontSize = 14.sp)
-                            Text(
-                                text = String.format("+%.2f$", income),
-                                color = textPrimary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
-                            )
-                            Text(text = "Acumulado local", color = textSecondary, fontSize = 11.sp)
-                        }
-                    }
-
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = cardBg)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "Gastos", color = textSecondary, fontSize = 14.sp)
-                            Text(
-                                text = String.format("-%.2f$", expense),
-                                color = textPrimary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
-                            )
-                            Text(text = "Acumulado local", color = textSecondary, fontSize = 11.sp)
-                        }
-                    }
-                }
-            }
-
-            // Mis Tarjetas
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = cardBg)
                 ) {
                     Column(
                         modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+                        Text("Balance Total", color = textSecondary, fontSize = 14.sp)
+                        val balance = (totalIncome ?: 0.0) - (totalExpense ?: 0.0)
+                        Text(
+                            text = "$${String.format("%.2f", balance)}",
+                            color = textPrimary,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "Mis tarjetas", color = textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Button(
-                                onClick = { },
-                                colors = ButtonDefaults.buttonColors(containerColor = cardBgLight),
-                                shape = RoundedCornerShape(50),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = null, tint = textPrimary, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Añadir", color = textPrimary, fontSize = 12.sp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(accentGreen.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = accentGreen, modifier = Modifier.size(18.dp))
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text("Ingresos", color = textSecondary, fontSize = 11.sp)
+                                    Text("+$${String.format("%.2f", totalIncome ?: 0.0)}", color = accentGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                }
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(accentRed.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.ArrowDownward, contentDescription = null, tint = accentRed, modifier = Modifier.size(18.dp))
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text("Gastos", color = textSecondary, fontSize = 11.sp)
+                                    Text("-$${String.format("%.2f", totalExpense ?: 0.0)}", color = accentRed, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                }
                             }
                         }
+                    }
+                }
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp)
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF3B82F6))
-                                    )
-                                )
-                                .padding(20.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("VISA", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                    Text("**** 6902", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
-                                }
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text("4156 6727 1439 6902", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text("Monse Neumann", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
-                                        Text("07/25", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
-                                    }
-                                }
-                            }
+                Text(
+                    text = "Movimientos Recientes",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = textPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+
+                if (transactions.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No hay transacciones registradas.", color = textSecondary, fontSize = 14.sp)
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        items(transactions, key = { it.id }) { item ->
+                            TransactionItemCard(
+                                transaction = item,
+                                cardBg = cardBg,
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                accentGreen = accentGreen,
+                                accentRed = accentRed
+                            )
                         }
                     }
                 }
             }
         }
     }
+
+    if (showAddDialog) {
+        AddTransactionDialog(
+            onDismiss = { showAddDialog = false },
+            onConfirm = { title, amount, type ->
+                viewModel.addTransaction(title, amount, type)
+                showAddDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun TransactionItemCard(
+    transaction: TransactionEntity,
+    cardBg: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    accentGreen: Color,
+    accentRed: Color
+) {
+    val context = LocalContext.current
+    val isIncome = transaction.type == "INCOME"
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBg)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(if (isIncome) accentGreen.copy(alpha = 0.15f) else accentRed.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isIncome) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                        contentDescription = null,
+                        tint = if (isIncome) accentGreen else accentRed
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(text = transaction.title, color = textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                    Text(
+                        text = if (isIncome) "Venta" else "Gasto",
+                        color = textSecondary,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "${if (isIncome) "+" else "-"}$${String.format("%.2f", transaction.amount)}",
+                    color = if (isIncome) accentGreen else accentRed,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Botón para compartir comprobante por WhatsApp
+                IconButton(
+                    onClick = {
+                        val receiptText = ReceiptHelper.generateReceiptText(transaction)
+                        WhatsAppHelper.sendMessage(context, "", receiptText)
+                    },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Compartir Recibo",
+                        tint = Color(0xFF25D366),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AddTransactionDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, Double, String) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var amountText by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("INCOME") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Nueva Transacción", color = Color.White) },
+        containerColor = Color(0xFF161E2E),
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Concepto") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = amountText,
+                    onValueChange = { amountText = it },
+                    label = { Text("Monto ($)") },
+                    singleLine = true
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    FilterChip(
+                        selected = type == "INCOME",
+                        onClick = { type = "INCOME" },
+                        label = { Text("Ingreso") }
+                    )
+                    FilterChip(
+                        selected = type == "EXPENSE",
+                        onClick = { type = "EXPENSE" },
+                        label = { Text("Gasto") }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val amount = amountText.toDoubleOrNull() ?: 0.0
+                    if (title.isNotBlank() && amount > 0) {
+                        onConfirm(title, amount, type)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF34D399))
+            ) {
+                Text("Guardar", color = Color.Black)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = Color.White)
+            }
+        }
+    )
 }
