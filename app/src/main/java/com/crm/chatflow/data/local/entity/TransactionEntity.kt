@@ -10,5 +10,5 @@ data class TransactionEntity(
     val title: String,
     val amount: Double,
     val type: String, // "INCOME" o "EXPENSE"
-    val date: Long = System.currentTimeMillis()
+    val date: String = "Hoy"
 )
