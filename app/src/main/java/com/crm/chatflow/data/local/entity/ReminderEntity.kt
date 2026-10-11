@@ -6,11 +6,12 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "reminders")
 data class ReminderEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val id: Long = 0L,
     val clientName: String,
-    val title: String,
-    val amount: Double = 0.0,
+    val clientPhone: String,
+    val concept: String,
+    val amount: Double,
     val dueDate: String,
-    val type: String, // "PAYMENT" (Cobro) o "APPOINTMENT" (Cita/Tarea)
+    val type: String, // "COBRO" o "CITA"
     val isCompleted: Boolean = false
 )
