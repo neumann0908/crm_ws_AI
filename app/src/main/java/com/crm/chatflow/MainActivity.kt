@@ -37,9 +37,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            CrmChatFlowTheme {
-                MainScreen()
-            }
+            CrmChatFlowTheme { MainScreen() }
         }
     }
 }
@@ -48,12 +46,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val items = listOf(
-        Screen.Dashboard,
-        Screen.Clients,
-        Screen.Chat,
-        Screen.Reminders
-    )
+    val items = listOf(Screen.Dashboard, Screen.Clients, Screen.Chat, Screen.Reminders)
 
     val darkBg = Color(0xFF0B0F19)
     val navBg = Color(0xFF161E2E)
@@ -63,10 +56,7 @@ fun MainScreen() {
     Scaffold(
         containerColor = darkBg,
         bottomBar = {
-            NavigationBar(
-                containerColor = navBg,
-                contentColor = Color.White
-            ) {
+            NavigationBar(containerColor = navBg, contentColor = Color.White) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -78,19 +68,15 @@ fun MainScreen() {
                         onClick = {
                             if (currentRoute != screen.route) {
                                 navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
+                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = accentGreen,
-                            selectedTextColor = accentGreen,
-                            unselectedIconColor = textSecondary,
-                            unselectedTextColor = textSecondary,
+                            selectedIconColor = accentGreen, selectedTextColor = accentGreen,
+                            unselectedIconColor = textSecondary, unselectedTextColor = textSecondary,
                             indicatorColor = Color(0xFF1E283C)
                         )
                     )
@@ -98,11 +84,7 @@ fun MainScreen() {
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Dashboard.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
+        NavHost(navController = navController, startDestination = Screen.Dashboard.route, modifier = Modifier.padding(innerPadding)) {
             composable(Screen.Dashboard.route) { DashboardScreen() }
             composable(Screen.Clients.route) { ClientsScreen() }
             composable(Screen.Chat.route) { ChatScreen() }
@@ -114,11 +96,7 @@ fun MainScreen() {
 @Composable
 fun CrmChatFlowTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = darkColorScheme(
-            background = Color(0xFF0B0F19),
-            surface = Color(0xFF161E2E),
-            primary = Color(0xFF34D399)
-        ),
+        colorScheme = darkColorScheme(background = Color(0xFF0B0F19), surface = Color(0xFF161E2E), primary = Color(0xFF34D399)),
         content = content
     )
 }
