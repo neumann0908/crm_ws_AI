@@ -2,6 +2,8 @@ package com.crm.chatflow.ui.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.crm.chatflow.data.CrmRepository
 import com.crm.chatflow.data.local.database.CrmDatabase
@@ -50,6 +52,16 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     type = type
                 )
             )
+        }
+    }
+
+    class Factory(private val application: Application) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(DashboardViewModel::class.java)) {
+                return DashboardViewModel(application) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }
