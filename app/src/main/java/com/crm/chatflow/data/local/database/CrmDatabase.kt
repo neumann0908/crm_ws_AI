@@ -17,7 +17,6 @@ import com.crm.chatflow.data.local.entity.TransactionEntity
     exportSchema = false
 )
 abstract class CrmDatabase : RoomDatabase() {
-
     abstract fun clientDao(): ClientDao
     abstract fun transactionDao(): TransactionDao
     abstract fun reminderDao(): ReminderDao
