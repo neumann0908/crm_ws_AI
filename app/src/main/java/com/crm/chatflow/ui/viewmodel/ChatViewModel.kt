@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 data class ChatMessage(
     val text: String,
     val isUser: Boolean,
-    val isIncome: Boolean = false // Bandera para identificar si es un ingreso registrado
+    val isIncome: Boolean = false
 )
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
@@ -33,7 +33,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         val db = CrmDatabase.getDatabase(application)
-        repository = CrmRepository(db.clientDao(), db.transactionDao())
+        repository = CrmRepository(db.clientDao(), db.transactionDao(), db.reminderDao())
     }
 
     fun sendMessage(userText: String) {
@@ -61,7 +61,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
                 botResponse = "¡Entendido! He registrado la venta de $$amount correctamente."
-                isIncomeResponse = true // Activamos la bandera de ingreso
+                isIncomeResponse = true
             } else if (lower.contains("gasto") || lower.contains("compra")) {
                 val amount = extractAmount(userText)
                 repository.insertTransaction(
@@ -72,7 +72,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 )
                 botResponse = "¡Entendido! He registrado el gasto de $$amount correctamente."
-                isIncomeResponse = false // Es gasto, no lleva botón de recibo de cobro
+                isIncomeResponse = false
             } else {
                 botResponse = "Procesado: '$userText'. Puedo registrar ventas o gastos si indicas el monto."
                 isIncomeResponse = false
