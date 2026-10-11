@@ -48,10 +48,9 @@ fun DashboardScreen() {
     val accentGreen = Color(0xFF34D399)
     val accentRed = Color(0xFFF87171)
 
-    // Usamos allTransactions para alinearlo con tu ViewModel y Repository
-    val transactions by viewModel.allTransactions.collectAsState(initial = emptyList())
-    val totalIncome by viewModel.totalIncome.collectAsState(initial = 0.0)
-    val totalExpense by viewModel.totalExpense.collectAsState(initial = 0.0)
+    val transactions by viewModel.transactions.collectAsState()
+    val totalIncome by viewModel.totalIncome.collectAsState()
+    val totalExpense by viewModel.totalExpense.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -170,7 +169,7 @@ fun DashboardScreen() {
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        items(transactions) { item ->
+                        items(transactions, key = { it.id }) { item ->
                             TransactionItemCard(
                                 transaction = item,
                                 cardBg = cardBg,
