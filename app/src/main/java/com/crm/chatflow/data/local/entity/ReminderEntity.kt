@@ -10,7 +10,7 @@ data class ReminderEntity(
     val clientName: String,
     val title: String,
     val amount: Double = 0.0,
-    val dueDate: String, // Formato "dd/MM/yyyy" o "dd/MM/yyyy HH:mm"
-    val type: String,    // "PAYMENT" (Cobro) o "APPOINTMENT" (Cita/Tarea)
+    val dueDate: String,
+    val type: String, // "PAYMENT" (Cobro) o "APPOINTMENT" (Cita/Tarea)
     val isCompleted: Boolean = false
 )
