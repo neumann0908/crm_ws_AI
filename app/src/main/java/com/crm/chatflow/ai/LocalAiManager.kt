@@ -48,6 +48,7 @@ class LocalAiManager(private val context: Context) {
 sealed class ParsedCommand {
     data class AddTransaction(val transaction: TransactionEntity) : ParsedCommand()
     data class AddClient(val client: ClientEntity) : ParsedCommand()
+    data class DeleteClient(val nameQuery: String) : ParsedCommand()
     data class Query(val intent: String) : ParsedCommand()
     object Unknown : ParsedCommand()
 }
@@ -57,6 +58,18 @@ class LocalAiParser {
     fun parseInput(input: String): ParsedCommand {
         val cleanInput = input.trim()
 
+        // 1. Detección de Eliminar / Borrar Cliente
+        val isDelete = cleanInput.contains("borrar", ignoreCase = true) || cleanInput.contains("eliminar", ignoreCase = true) || cleanInput.contains("quitar", ignoreCase = true)
+        if (isDelete && (cleanInput.contains("cliente", ignoreCase = true) || cleanInput.contains("a", ignoreCase = true))) {
+            val words = cleanInput.split(" ")
+            val stopWords = listOf("borrar", "eliminar", "quitar", "cliente", "a", "al", "el", "la")
+            val nameQuery = words.filter { !stopWords.contains(it.lowercase()) }.joinToString(" ")
+            if (nameQuery.isNotBlank()) {
+                return ParsedCommand.DeleteClient(nameQuery)
+            }
+        }
+
+        // 2. Detección de Transacciones (Ventas / Gastos)
         val isIncome = cleanInput.contains("venta", ignoreCase = true) || cleanInput.contains("ingreso", ignoreCase = true) || cleanInput.contains("cobre", ignoreCase = true)
         val isExpense = cleanInput.contains("gasto", ignoreCase = true) || cleanInput.contains("pague", ignoreCase = true) || cleanInput.contains("compras", ignoreCase = true)
 
@@ -78,15 +91,17 @@ class LocalAiParser {
             }
         }
 
-        val isClient = cleanInput.contains("cliente", ignoreCase = true) || cleanInput.contains("agregar a", ignoreCase = true) || cleanInput.contains("registrar a", ignoreCase = true)
-        if (isClient) {
+        // 3. Detección de Agregar Cliente
+        val isClient = cleanInput.contains("cliente", ignoreCase = true) || cleanInput.contains("agregar", ignoreCase = true) || cleanInput.contains("registrar", ignoreCase = true)
+        if (isClient && !isDelete) {
             val phoneRegex = Regex("""(\+?\d{8,15})""")
             val phoneMatch = phoneRegex.find(cleanInput)
             val phone = phoneMatch?.value ?: ""
 
             val words = cleanInput.split(" ")
-            val nameCandidates = words.filter { !listOf("cliente", "agregar", "registrar", "a", "con", "tel", "telefono", "teléfono", "nuevo", "nueva").contains(it.lowercase()) && !it.matches(Regex("""\d+""")) }
-            val name = nameCandidates.take(2).joinToString(" ").replaceFirstChar { it.uppercase() }
+            val stopWords = listOf("cliente", "agregar", "registrar", "a", "con", "tel", "telefono", "teléfono", "nuevo", "nueva")
+            val nameCandidates = words.filter { !stopWords.contains(it.lowercase()) && !it.matches(Regex("""\d+""")) }
+            val name = nameCandidates.joinToString(" ").replaceFirstChar { it.uppercase() }
 
             if (name.isNotBlank()) {
                 return ParsedCommand.AddClient(
@@ -101,6 +116,7 @@ class LocalAiParser {
             }
         }
 
+        // 4. Consultas Generales
         if (cleanInput.contains("balance", ignoreCase = true) || cleanInput.contains("cuanto", ignoreCase = true) || cleanInput.contains("resumen", ignoreCase = true)) {
             return ParsedCommand.Query("balance_summary")
         }
