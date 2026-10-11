@@ -32,7 +32,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _messages = MutableStateFlow<List<ChatMessage>>(
         listOf(
-            ChatMessage("¡Hola! Soy tu asistente de IA local. Puedes decirme cosas como:\n• 'Registrar venta de 50$'\n• 'Agregar cliente Carlos Ruiz 04121234567'", false)
+            ChatMessage("¡Hola! Soy tu asistente de IA local. Puedes decirme cosas como:\n• 'Registrar venta de 50$'\n• 'Agregar cliente Carlos Ruiz 04121234567'\n• 'Borrar cliente Carlos Ruiz'", false)
         )
     )
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
@@ -65,6 +65,16 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 is ParsedCommand.AddClient -> {
                     repository.insertClient(command.client)
                     responseText = "👤 ¡Cliente guardado! '${command.client.name}' ha sido agregado a tu lista de Clientes."
+                }
+                is ParsedCommand.DeleteClient -> {
+                    val clients = repository.allClients.first()
+                    val target = clients.find { it.name.contains(command.nameQuery, ignoreCase = true) }
+                    if (target != null) {
+                        repository.deleteClient(target)
+                        responseText = "🗑️ Cliente '${target.name}' eliminado correctamente."
+                    } else {
+                        responseText = "🔍 No encontré a ningún cliente que coincida con '${command.nameQuery}' para eliminar."
+                    }
                 }
                 is ParsedCommand.Query -> {
                     val income = repository.totalIncome.first() ?: 0.0
