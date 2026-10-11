@@ -15,6 +15,7 @@ class CrmRepository(
 ) {
     val allClients: Flow<List<ClientEntity>> = clientDao.getAllClients()
     suspend fun insertClient(client: ClientEntity) = clientDao.insertClient(client)
+    suspend fun deleteClient(client: ClientEntity) = clientDao.deleteClient(client)
 
     val allTransactions: Flow<List<TransactionEntity>> = transactionDao.getAllTransactions()
     suspend fun insertTransaction(transaction: TransactionEntity) = transactionDao.insertTransaction(transaction)
