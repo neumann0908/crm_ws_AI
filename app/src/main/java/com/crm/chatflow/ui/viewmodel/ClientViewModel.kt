@@ -20,41 +20,26 @@ class ClientViewModel(application: Application) : AndroidViewModel(application) 
     init {
         val db = CrmDatabase.getDatabase(application)
         repository = CrmRepository(db.clientDao(), db.transactionDao(), db.reminderDao())
-        clients = repository.allClients.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        clients = repository.allClients.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     }
 
-    fun addClient(name: String, phone: String, notes: String) {
+    fun addClient(name: String, phone: String, email: String, notes: String) {
         viewModelScope.launch {
-            repository.insertClient(
-                ClientEntity(
-                    name = name,
-                    phone = phone,
-                    email = "",
-                    notes = notes,
-                    status = "ACTIVE"
-                )
-            )
+            repository.insertClient(ClientEntity(name = name, phone = phone, email = email, notes = notes, status = "ACTIVE"))
         }
     }
 
     fun deleteClient(client: ClientEntity) {
         viewModelScope.launch {
-            val db = CrmDatabase.getDatabase(getApplication())
-            db.clientDao().delete(client)
+            repository.deleteClient(client)
         }
     }
 
-    companion object {
-        fun Factory(application: Application): ViewModelProvider.Factory =
-            object : ViewModelProvider.Factory {
-                @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return ClientViewModel(application) as T
-                }
-            }
+    class Factory(private val application: Application) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ClientViewModel::class.java)) return ClientViewModel(application) as T
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }
