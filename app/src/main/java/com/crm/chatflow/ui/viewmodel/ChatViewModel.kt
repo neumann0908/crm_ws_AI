@@ -5,93 +5,85 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.crm.chatflow.ai.LocalAiManager
-import com.crm.chatflow.ai.LocalAiParser
-import com.crm.chatflow.ai.ParsedCommand
 import com.crm.chatflow.data.CrmRepository
 import com.crm.chatflow.data.local.database.CrmDatabase
-import kotlinx.coroutines.Dispatchers
+import com.crm.chatflow.data.local.entity.TransactionEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 data class ChatMessage(
     val text: String,
-    val isUser: Boolean,
-    val timestamp: Long = System.currentTimeMillis()
+    val isUser: Boolean
 )
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: CrmRepository
-    private val aiManager = LocalAiManager(application)
-    private val parser = LocalAiParser()
 
-    private val _messages = MutableStateFlow<List<ChatMessage>>(
-        listOf(
-            ChatMessage("¡Hola! Soy tu asistente de IA local. Puedes decirme cosas como:\n• 'Registrar venta de 50$'\n• 'Agregar cliente Carlos Ruiz 04121234567'\n• 'Borrar cliente Carlos Ruiz'", false)
-        )
-    )
+    val inputText = MutableStateFlow("")
+
+    private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val _isProcessing = MutableStateFlow(false)
+    val isProcessing: StateFlow<Boolean> = _isProcessing.asStateFlow()
 
     init {
         val db = CrmDatabase.getDatabase(application)
         repository = CrmRepository(db.clientDao(), db.transactionDao())
     }
 
-    fun sendMessage(prompt: String) {
-        if (prompt.isBlank()) return
+    fun sendMessage(userText: String) {
+        if (userText.isBlank()) return
 
-        val userMessage = ChatMessage(prompt, true)
-        _messages.value = _messages.value + userMessage
-        _isLoading.value = true
+        val currentList = _messages.value.toMutableList()
+        currentList.add(ChatMessage(text = userText, isUser = true))
+        _messages.value = currentList
+        inputText.value = ""
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val command = parser.parseInput(prompt)
-            var responseText = ""
+        _isProcessing.value = true
 
-            when (command) {
-                is ParsedCommand.AddTransaction -> {
-                    repository.insertTransaction(command.transaction)
-                    val tipoStr = if (command.transaction.type == "INCOME") "Venta" else "Gasto"
-                    responseText = "✅ ¡Listo! Se ha registrado $tipoStr por $${String.format("%.2f", command.transaction.amount)} en el Panel."
-                }
-                is ParsedCommand.AddClient -> {
-                    repository.insertClient(command.client)
-                    responseText = "👤 ¡Cliente guardado! '${command.client.name}' ha sido agregado a tu lista de Clientes."
-                }
-                is ParsedCommand.DeleteClient -> {
-                    val clients = repository.allClients.first()
-                    val target = clients.find { it.name.contains(command.nameQuery, ignoreCase = true) }
-                    if (target != null) {
-                        repository.deleteClient(target)
-                        responseText = "🗑️ Cliente '${target.name}' eliminado correctamente."
-                    } else {
-                        responseText = "🔍 No encontré a ningún cliente que coincida con '${command.nameQuery}' para eliminar."
-                    }
-                }
-                is ParsedCommand.Query -> {
-                    val income = repository.totalIncome.first() ?: 0.0
-                    val expense = repository.totalExpense.first() ?: 0.0
-                    val balance = income - expense
-                    responseText = "📊 Resumen Financiero Actual:\n\n• Balance: $${String.format("%.2f", balance)}\n• Ingresos: +$${String.format("%.2f", income)}\n• Gastos: -$${String.format("%.2f", expense)}"
-                }
-                is ParsedCommand.Unknown -> {
-                    responseText = aiManager.generateResponse(prompt)
-                }
+        viewModelScope.launch {
+            // Simulación de respuesta IA local y procesamiento de comandos
+            val lower = userText.lowercase()
+            val botResponse: String
+
+            if (lower.contains("venta") || lower.contains("ingreso") || lower.contains("pago")) {
+                val amount = extractAmount(userText)
+                repository.insertTransaction(
+                    TransactionEntity(
+                        title = userText,
+                        amount = amount,
+                        type = "INCOME"
+                    )
+                )
+                botResponse = "¡Entendido! He registrado la venta de $$amount correctamente."
+            } else if (lower.contains("gasto") || lower.contains("compra")) {
+                val amount = extractAmount(userText)
+                repository.insertTransaction(
+                    TransactionEntity(
+                        title = userText,
+                        amount = amount,
+                        type = "EXPENSE"
+                    )
+                )
+                botResponse = "¡Entendido! He registrado el gasto de $$amount correctamente."
+            } else {
+                botResponse = "Procesado: '$userText'. Puedo registrar ventas o gastos si indicas el monto."
             }
 
-            withContext(Dispatchers.Main) {
-                _messages.value = _messages.value + ChatMessage(responseText, false)
-                _isLoading.value = false
-            }
+            val updatedList = _messages.value.toMutableList()
+            updatedList.add(ChatMessage(text = botResponse, isUser = false))
+            _messages.value = updatedList
+            _isProcessing.value = false
         }
+    }
+
+    private fun extractAmount(text: String): Double {
+        val numbers = Regex("\\d+(\\.\\d+)?").findAll(text).map { it.value.toDouble() }.toList()
+        return numbers.firstOrNull() ?: 10.0
     }
 
     class Factory(private val application: Application) : ViewModelProvider.Factory {
