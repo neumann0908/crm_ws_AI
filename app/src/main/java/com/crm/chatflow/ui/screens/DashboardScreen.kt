@@ -48,9 +48,10 @@ fun DashboardScreen() {
     val accentGreen = Color(0xFF34D399)
     val accentRed = Color(0xFFF87171)
 
-    val transactions by viewModel.transactions.collectAsState()
-    val totalIncome by viewModel.totalIncome.collectAsState()
-    val totalExpense by viewModel.totalExpense.collectAsState()
+    // Usamos allTransactions para alinearlo con tu ViewModel y Repository
+    val transactions by viewModel.allTransactions.collectAsState(initial = emptyList())
+    val totalIncome by viewModel.totalIncome.collectAsState(initial = 0.0)
+    val totalExpense by viewModel.totalExpense.collectAsState(initial = 0.0)
 
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -97,7 +98,9 @@ fun DashboardScreen() {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text("Balance Total", color = textSecondary, fontSize = 14.sp)
-                        val balance = (totalIncome ?: 0.0) - (totalExpense ?: 0.0)
+                        val incomeVal = totalIncome ?: 0.0
+                        val expenseVal = totalExpense ?: 0.0
+                        val balance = incomeVal - expenseVal
                         Text(
                             text = "$${String.format("%.2f", balance)}",
                             color = textPrimary,
@@ -122,7 +125,7 @@ fun DashboardScreen() {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     Text("Ingresos", color = textSecondary, fontSize = 11.sp)
-                                    Text("+$${String.format("%.2f", totalIncome ?: 0.0)}", color = accentGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    Text("+$${String.format("%.2f", incomeVal)}", color = accentGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                 }
                             }
 
@@ -139,7 +142,7 @@ fun DashboardScreen() {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     Text("Gastos", color = textSecondary, fontSize = 11.sp)
-                                    Text("-$${String.format("%.2f", totalExpense ?: 0.0)}", color = accentRed, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    Text("-$${String.format("%.2f", expenseVal)}", color = accentRed, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                 }
                             }
                         }
@@ -167,7 +170,7 @@ fun DashboardScreen() {
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        items(transactions, key = { it.id }) { item ->
+                        items(transactions) { item ->
                             TransactionItemCard(
                                 transaction = item,
                                 cardBg = cardBg,
@@ -259,7 +262,11 @@ fun TransactionItemCard(
                 // Botón para compartir comprobante por WhatsApp
                 IconButton(
                     onClick = {
-                        val receiptText = ReceiptHelper.generateReceiptText(transaction)
+                        val receiptText = ReceiptHelper.generateReceiptText(
+                            title = transaction.title,
+                            amount = transaction.amount,
+                            type = transaction.type
+                        )
                         WhatsAppHelper.sendMessage(context, "", receiptText)
                     },
                     modifier = Modifier.size(32.dp)
