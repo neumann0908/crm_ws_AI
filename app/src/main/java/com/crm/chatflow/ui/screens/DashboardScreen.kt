@@ -1,6 +1,7 @@
 package com.crm.chatflow.ui.screens
 
 import android.app.Application
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,16 +25,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
 import com.crm.chatflow.ui.viewmodel.DashboardViewModel
 
 @Composable
 fun DashboardScreen() {
     val context = LocalContext.current
-    val application = context.applicationContext as Application
-    val viewModel: DashboardViewModel = viewModel(
-        factory = DashboardViewModel.Factory(application)
-    )
+    val viewModel = remember(context) {
+        val activity = context as ComponentActivity
+        val application = activity.application
+        ViewModelProvider(
+            activity,
+            DashboardViewModel.Factory(application)
+        )[DashboardViewModel::class.java]
+    }
 
     val darkBg = Color(0xFF0B0F19)
     val cardBg = Color(0xFF161E2E)
