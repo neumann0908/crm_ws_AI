@@ -68,7 +68,6 @@ fun DashboardScreen(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Tarjetas de Resumen de Ingresos y Gastos
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -87,7 +86,6 @@ fun DashboardScreen(
                     )
                 }
 
-                // Buscador de Transacciones
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -120,7 +118,6 @@ fun DashboardScreen(
                 }
             }
 
-            // Diálogo para Agregar Transacción Manualmente
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
@@ -209,7 +206,7 @@ fun TransactionItem(tx: TransactionEntity) {
         ) {
             Column {
                 Text(tx.title, color = Color.White, fontWeight = FontWeight.Bold)
-                Text(tx.date, color = Color(0xFF94A3B8), fontSize = 12.sp)
+                Text(tx.date.toString(), color = Color(0xFF94A3B8), fontSize = 12.sp)
             }
             Text(
                 text = (if (isIncome) "+ $" else "- $") + tx.amount,
