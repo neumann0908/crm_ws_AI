@@ -29,13 +29,16 @@ class ClientViewModel(application: Application) : AndroidViewModel(application) 
         )
     }
 
-    fun addClient(name: String, phone: String, notes: String = "") {
+    // Actualizado con valores por defecto para email y status para mantener compatibilidad
+    fun addClient(name: String, phone: String, notes: String = "", email: String = "", status: String = "ACTIVE") {
         viewModelScope.launch {
             repository.insertClient(
                 ClientEntity(
                     name = name,
                     phone = phone,
-                    notes = notes
+                    notes = notes,
+                    email = email,
+                    status = status
                 )
             )
         }
