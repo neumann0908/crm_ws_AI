@@ -68,7 +68,7 @@ fun DashboardScreen(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Tarjetas de Resumen
+                // Tarjetas de Resumen de Ingresos y Gastos
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -87,7 +87,7 @@ fun DashboardScreen(
                     )
                 }
 
-                // Barra de Búsqueda
+                // Buscador de Transacciones
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -120,7 +120,7 @@ fun DashboardScreen(
                 }
             }
 
-            // Diálogo para Agregar Transacción
+            // Diálogo para Agregar Transacción Manualmente
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
