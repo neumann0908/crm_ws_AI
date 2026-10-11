@@ -1,5 +1,6 @@
 package com.crm.chatflow.ui.screens
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,9 +27,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.crm.chatflow.ui.viewmodel.DashboardViewModel
 
 @Composable
-fun DashboardScreen(
-    viewModel: DashboardViewModel = viewModel()
-) {
+fun DashboardScreen() {
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
+    val viewModel: DashboardViewModel = viewModel(
+        factory = DashboardViewModel.Factory(application)
+    )
+
     val darkBg = Color(0xFF0B0F19)
     val cardBg = Color(0xFF161E2E)
     val cardBgLight = Color(0xFF1E283C)
@@ -114,7 +120,7 @@ fun DashboardScreen(
                 }
             }
 
-            // Título principal en Español
+            // Título principal
             item {
                 Text(
                     text = "Mi Panel",
@@ -124,7 +130,7 @@ fun DashboardScreen(
                 )
             }
 
-            // Tarjeta de Balance General (Dinámica)
+            // Tarjeta de Balance General (Dinámica con Room)
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
